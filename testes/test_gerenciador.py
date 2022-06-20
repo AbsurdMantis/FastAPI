@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from fastapi.testclient import TestClient
 from fastapi import status
 from gerenciador_tarefas.gerenciador import app, TAREFAS
@@ -148,7 +147,7 @@ def test_remover_tarefa():
     cliente = TestClient(app)
     resposta = cliente.delete("/tarefas/3fa85f64-5717-4562-b3fc-2c963f66afa6")
     json = resposta.json()
-    assert json == {'detail': 'Not Found'}
+    assert json == {'detail': 'Method Not Allowed'}
     TAREFAS.clear()
 
 def test_concluir_tarefa():
@@ -161,8 +160,12 @@ def test_concluir_tarefa():
         }
     )
     cliente = TestClient(app)
-    resposta = cliente.put("/tarefas/3fa85f64-5717-4562-b3fc-2c963f66afa6", json=({"estado" : "finalizado"}))
+    # finalizado = {"estado" : "finalizado"}
+    tarefa_especifica =  cliente.get("/tarefas/3fa85f64-5717-4562-b3fc-2c963f66afa6")
+    detalhes = tarefa_especifica.json()
+    detalhes['estado'] = 'finalizado'
+    resposta = cliente.put("/tarefas/3fa85f64-5717-4562-b3fc-2c963f66afa6", json=detalhes)
     #editar resposta
-    atualizado = resposta.json
-    assert atualizado['estado'] == 'finalizado'
+    atualizado = resposta.json()
+    assert atualizado["estado"] == "finalizado"
     TAREFAS.clear()
